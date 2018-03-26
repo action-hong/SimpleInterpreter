@@ -2,7 +2,7 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, MINUS, EOF = 'INTEGER', 'PLUS', 'MINUS', 'EOF'
+INTEGER, PLUS, MINUS, MULTI, DIV, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MULTI', 'DIV', 'EOF'
 
 
 class Token(object):
@@ -63,7 +63,6 @@ class Interpreter(object):
         This method is responsible for breaking a sentence
         apart into tokens. One token at a time.
         """
-        text = self.text
         while self.current_char is not None:
           if self.current_char.isspace():
             self.skip_whitespace()
@@ -76,6 +75,12 @@ class Interpreter(object):
           if self.current_char == '-':
             self.advance()
             return Token(MINUS, '-')
+          if self.current_char == '*':
+            self.advance()
+            return Token(MULTI, '*')
+          if self.current_char == '/':
+            self.advance()
+            return Token(DIV, '/')
           self.error()
         return Token(EOF, None)
 
@@ -89,6 +94,17 @@ class Interpreter(object):
         else:
             self.error()
 
+    def _expr(self, left, op, right):
+        if op.type == PLUS:
+          result = left.value + right.value
+        elif op.type == MINUS:
+          result = left.value - right.value
+        elif op.type == MULTI:
+          result = left.value * right.value
+        else:
+          result = left.value / right.value
+        return Token(INTEGER, result)
+
     def expr(self):
         """expr -> INTEGER PLUS INTEGER"""
         # set current token to the first token taken from the input
@@ -98,28 +114,25 @@ class Interpreter(object):
         left = self.current_token
         self.eat(INTEGER)
 
-        # we expect the current token to be a '+' token
-        op = self.current_token
-        if op.type == PLUS:
-          self.eat(PLUS)
-        else:
-          self.eat(MINUS)
+        while self.current_token.value is not None:
+            # we expect the current token to be a '+' token
+            op = self.current_token
+            if op.type == PLUS:
+              self.eat(PLUS)
+            elif op.type == MINUS:
+              self.eat(MINUS)
+            elif op.type == MULTI:
+              self.eat(MULTI)
+            else:
+              self.eat(DIV)
 
-        # we expect the current token to be a single-digit integer
-        right = self.current_token
-        self.eat(INTEGER)
-        # after the above call the self.current_token is set to
-        # EOF token
+            # we expect the current token to be a single-digit integer
+            right = self.current_token
+            self.eat(INTEGER)
+        
+            left = self._expr(left, op, right)
 
-        # at this point INTEGER PLUS INTEGER sequence of tokens
-        # has been successfully found and the method can just
-        # return the result of adding two integers, thus
-        # effectively interpreting client input
-        if op.type == PLUS:
-          result = left.value + right.value
-        else:
-          result = left.value - right.value
-        return result
+        return left.value
 
 
 def main():
