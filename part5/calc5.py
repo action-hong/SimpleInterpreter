@@ -1,5 +1,5 @@
-INTEGER, PLUS, MINUS, MUL, DIV, EOF = {
-  "INTEGER", "PLUS", "MINUS", "MUL", "DIV", "EOF"
+INTEGER, PLUS, MINUS, MUL, DIV, EOF, LEFT_PAREN, RIGHT_PAREN = {
+  "INTEGER", "PLUS", "MINUS", "MUL", "DIV", "EOF", "LEFT_PAREN", "RIGHT_PAREN"
 }
 
 
@@ -71,6 +71,14 @@ class Lexer(object):
         self.advance()
         return Token(DIV, '/')
 
+      if self.current_char == '(':
+        self.advance()
+        return Token(LEFT_PAREN, "(")
+      
+      if self.current_char == ')':
+        self.advance()
+        return Token(RIGHT_PAREN, ')')
+
       self.error()
     
     return Token(EOF, None)
@@ -91,12 +99,17 @@ class Interpreter(object):
 
   def factor(self):
     token = self.current_token
-    self.eat(INTEGER)
-    return token.value
+    if token.type == LEFT_PAREN:
+      self.eat(LEFT_PAREN)
+      # 每一个括号内又是一个等式
+      num = self.expr()
+      return num
+    elif token.type == INTEGER:
+      self.eat(INTEGER)
+      return token.value
   
   def term(self):
     result = self.factor()
-
     while self.current_token.type in [MUL, DIV]:
       if self.current_token.type == MUL:
         self.eat(MUL)
@@ -110,7 +123,6 @@ class Interpreter(object):
   def expr(self):
 
     result = self.term()
-
     while self.current_token.type in [PLUS, MINUS]:
       if self.current_token.type == PLUS:
         self.eat(PLUS)
@@ -118,6 +130,11 @@ class Interpreter(object):
       elif self.current_token.type == MINUS:
         self.eat(MINUS)
         result = result - self.term()
+    
+    if self.current_token.type == RIGHT_PAREN:
+      # 这一步很关键, 因为碰到右括号, 说明该括号内的计算结束了
+      # 下一个符号计算也不需要他的, 故要跳过这个括号
+      self.eat(RIGHT_PAREN)
     
     return result
 
@@ -129,6 +146,7 @@ def main():
       break
     if not text:
       continue
+    # text = '(1 + 2) * 3'
     lexer = Lexer(text)
     interpreter = Interpreter(lexer)
     result = interpreter.expr()

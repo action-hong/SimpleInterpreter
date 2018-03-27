@@ -47,10 +47,24 @@ class InterpreterTestCase(unittest.TestCase):
         self.assertEqual(result, 17)
 
     def test_expression3(self):
+        interpreter = self.makeInterpreter('7 + 3 * (10 / (12 / (3 + 1) - 1))')
+        result = interpreter.expr()
+        self.assertEqual(result, 22)
+
+    def test_expression4(self):
+        interpreter = self.makeInterpreter('(1 + 2) * 3')
+        result = interpreter.expr()
+        self.assertEqual(result, 9)
+
+    def test_expression5(self):
         interpreter = self.makeInterpreter('1 - 2 * 2')
         result = interpreter.expr()
         self.assertEqual(result, -3)
 
+    def test_expression6(self):
+        interpreter = self.makeInterpreter('(1 + 1) * ((2 - 3) - (4 - 2))')
+        result = interpreter.expr()
+        self.assertEqual(result, -6)
 
 if __name__ == '__main__':
     unittest.main()
