@@ -100,9 +100,12 @@ class Interpreter(object):
   def factor(self):
     token = self.current_token
     if token.type == LEFT_PAREN:
+      # 等式开始了, 必然当前这个符号是左括号
       self.eat(LEFT_PAREN)
       # 每一个括号内又是一个等式
       num = self.expr()
+      # 等式结束了, 必然当前这个符号是右括号
+      self.eat(RIGHT_PAREN)
       return num
     elif token.type == INTEGER:
       self.eat(INTEGER)
@@ -130,11 +133,6 @@ class Interpreter(object):
       elif self.current_token.type == MINUS:
         self.eat(MINUS)
         result = result - self.term()
-    
-    if self.current_token.type == RIGHT_PAREN:
-      # 这一步很关键, 因为碰到右括号, 说明该括号内的计算结束了
-      # 下一个符号计算也不需要他的, 故要跳过这个括号
-      self.eat(RIGHT_PAREN)
     
     return result
 
