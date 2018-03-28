@@ -45,8 +45,8 @@ class Lexer(object):
     else:
       self.current_char = self.text[self.pos]
 
-  def peek(self):
-    peek_pos = self.pos + 1
+  def peek(self, num = 1):
+    peek_pos = self.pos + num
     if peek_pos > len(self.text) - 1:
       return None
     return self.text[peek_pos]
@@ -64,10 +64,12 @@ class Lexer(object):
 
   def _id(self):
     result = ''
-    while self.current_char is not None and self.current_char.isalnum():
+    while self.current_char is not None and (self.current_char.isalnum() or self.current_char == '_'):
       result += self.current_char
       self.advance()
     
+    # variables 和 reserved keywords 都是大小写不敏感的
+    result = result.upper()
     token = RESERVED_KEYWORDS.get(result, Token(ID, result))
     return token
   
@@ -77,17 +79,6 @@ class Lexer(object):
       if self.current_char.isspace():
         self.skip_whitespace()
         continue
-      
-      if self.current_char.isalpha():
-        return self._id()
-
-      if self.current_char.isdigit():
-        return Token(INTEGER, self.integer())
-
-      if self.current_char == ':' and self.peek() == '=':
-        self.advance()
-        self.advance()
-        return Token(ASSIGN, ':=')
 
       if self.current_char == ';':
           self.advance()
@@ -105,9 +96,12 @@ class Lexer(object):
           self.advance()
           return Token(MUL, '*')
 
-      if self.current_char == '/':
+      # pascal 使用div来做触发
+      if self.current_char == 'd' and self.peek() == 'i' and self.peek(2) == 'v':
           self.advance()
-          return Token(DIV, '/')
+          self.advance()
+          self.advance()
+          return Token(DIV, 'div')
 
       if self.current_char == '(':
           self.advance()
@@ -120,6 +114,19 @@ class Lexer(object):
       if self.current_char == '.':
           self.advance()
           return Token(DOT, '.')
+
+      # 变量名可以以_ 下划线开始
+      # 由于 除法是div, 这部分逻辑必须放在下面, 否则可能吧div当成 变量了
+      if self.current_char.isalpha() or self.current_char == '_':
+        return self._id()
+
+      if self.current_char.isdigit():
+        return Token(INTEGER, self.integer())
+
+      if self.current_char == ':' and self.peek() == '=':
+        self.advance()
+        self.advance()
+        return Token(ASSIGN, ':=')
 
       self.error()
     
