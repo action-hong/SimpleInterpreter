@@ -36,7 +36,7 @@ EOF           = 'EOF'
 
 class Token(object):
     def __init__(self, type, value):
-        self.type = type
+        self.type  = type
         self.value = value
 
     def __str__(self):
@@ -57,12 +57,12 @@ class Token(object):
 
 RESERVED_KEYWORDS = {
     'PROGRAM': Token('PROGRAM', 'PROGRAM'),
-    'VAR': Token('VAR', 'VAR'),
-    'DIV': Token('INTEGER_DIV', 'DIV'),
+    'VAR'    : Token('VAR', 'VAR'),
+    'DIV'    : Token('INTEGER_DIV', 'DIV'),
     'INTEGER': Token('INTEGER', 'INTEGER'),
-    'REAL': Token('REAL', 'REAL'),
-    'BEGIN': Token('BEGIN', 'BEGIN'),
-    'END': Token('END', 'END'),
+    'REAL'   : Token('REAL', 'REAL'),
+    'BEGIN'  : Token('BEGIN', 'BEGIN'),
+    'END'    : Token('END', 'END'),
 }
 
 
