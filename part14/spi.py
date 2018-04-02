@@ -758,7 +758,11 @@ class ScopedSymbolTable(object):
 
 class SemanticAnalyzer(NodeVisitor):
     def __init__(self):
-        self.current_scope = None
+        self.current_scope = ScopedSymbolTable(
+            scope_name="builtins",
+            scope_level=0
+        )
+        self.current_scope._init_builtins()
 
     def visit_Block(self, node):
         for declaration in node.declarations:
@@ -767,12 +771,15 @@ class SemanticAnalyzer(NodeVisitor):
 
     def visit_Program(self, node):
         print('ENTER scope: global')
+        proc_name = node.name
+        proc_symbol = ProcedureSymbol(proc_name)
+        self.current_scope.insert(proc_symbol)
         global_scope = ScopedSymbolTable(
             scope_name='global',
             scope_level=1,
             enclosing_scope=self.current_scope, # None
         )
-        global_scope._init_builtins()
+        
         self.current_scope = global_scope
 
         # visit subtree
@@ -782,6 +789,8 @@ class SemanticAnalyzer(NodeVisitor):
 
         self.current_scope = self.current_scope.enclosing_scope
         print('LEAVE scope: global')
+
+        print(self.current_scope)
 
     def visit_Compound(self, node):
         for child in node.children:
