@@ -856,6 +856,12 @@ class SemanticAnalyzer(NodeVisitor):
         # left-hand side
         self.visit(node.left)
 
+    def visit_Num(self, node):
+        pass
+
+    def visit_UnaryOp(self, node):
+        self.visit(node.expr)
+
     def visit_Var(self, node):
         var_name = node.value
         var_symbol = self.current_scope.lookup(var_name)
@@ -955,12 +961,12 @@ def main():
     except Exception as e:
         print(e)
 
-    # interpreter = Interpreter(tree)
-    # result = interpreter.interpret()
-    # print('')
-    # print('Run-time GLOBAL_MEMORY contents:')
-    # for k, v in sorted(interpreter.GLOBAL_MEMORY.items()):
-    #     print('%s = %s' % (k, v))
+    interpreter = Interpreter(tree)
+    result = interpreter.interpret()
+    print('')
+    print('Run-time GLOBAL_MEMORY contents:')
+    for k, v in sorted(interpreter.GLOBAL_MEMORY.items()):
+        print('%s = %s' % (k, v))
 
 
 if __name__ == '__main__':
